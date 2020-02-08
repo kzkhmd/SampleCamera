@@ -14,7 +14,7 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var previewView: UIView!
     
-    var session = AVCaptureSession()
+    var captureSession = AVCaptureSession()
     var photoOutputObj = AVCapturePhotoOutput()
     let notification = NotificationCenter.default
     
@@ -27,29 +27,32 @@ class ViewController: UIViewController {
             name: UIDevice.orientationDidChangeNotification,
             object: nil)
         
-        if session.isRunning {
+        if captureSession.isRunning {
             return
         }
         
         setupInputOutput()
         setPreviewLayer()
         
-        session.startRunning()
+        captureSession.startRunning()
     }
     
     func setupInputOutput() {
-        session.sessionPreset = AVCaptureSession.Preset.photo
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+        
+        guard let device = AVCaptureDevice.default(
+            AVCaptureDevice.DeviceType.builtInWideAngleCamera,
+            for: AVMediaType.video,
+            position: AVCaptureDevice.Position.back) else {
+                print("デバイスを取得できなかった")
+                return
+        }
         
         do {
-            let device = AVCaptureDevice.default(
-                AVCaptureDevice.DeviceType.builtInWideAngleCamera,
-                for: AVMediaType.video,
-                position: AVCaptureDevice.Position.back)
+            let input = try AVCaptureDeviceInput(device: device)
             
-            let input = try AVCaptureDeviceInput(device: device!)
-            
-            if session.canAddInput(input) {
-                session.addInput(input)
+            if captureSession.canAddInput(input) {
+                captureSession.addInput(input)
             } else {
                 print("セッションに入力を追加できなかった")
                 return
@@ -59,8 +62,8 @@ class ViewController: UIViewController {
             return
         }
         
-        if session.canAddOutput(photoOutputObj) {
-            session.addOutput(photoOutputObj)
+        if captureSession.canAddOutput(photoOutputObj) {
+            captureSession.addOutput(photoOutputObj)
         } else {
             print("セッションに出力を追加できなかった")
             return
@@ -68,7 +71,7 @@ class ViewController: UIViewController {
     }
     
     func setPreviewLayer() {
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         
         previewLayer.frame = view.bounds
         previewLayer.masksToBounds = true
@@ -81,7 +84,7 @@ class ViewController: UIViewController {
         let captureSetting = AVCapturePhotoSettings()
         
         captureSetting.flashMode = .auto
-        captureSetting.isDepthDataDeliveryEnabled = true
+        captureSetting.isDepthDataDeliveryEnabled = false
         captureSetting.isHighResolutionPhotoEnabled = false
         
         photoOutputObj.capturePhoto(with: captureSetting, delegate: self)
@@ -104,6 +107,7 @@ class ViewController: UIViewController {
         }
     }
 }
+
 
 extension ViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
