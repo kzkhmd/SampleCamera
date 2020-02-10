@@ -46,6 +46,7 @@
                     </view>
                     <connections>
                         <outlet property="previewView" destination="1Ff-8x-tME" id="7nM-WK-8gz"/>
+                        <outlet property="shutterButton" destination="c0B-JZ-HDk" id="Vw6-LR-s4a"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
